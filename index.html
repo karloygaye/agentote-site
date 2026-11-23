@@ -16,9 +16,12 @@
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png" />
 <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png" />
 <link rel="apple-touch-icon" href="assets/apple-touch-icon-180.png" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<!-- Polices auto-hébergées (OFL) : aucune requête vers Google Fonts -->
+<link rel="preload" href="assets/fonts/Fraunces-normal-latin.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="assets/fonts/Inter-normal-latin.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="stylesheet" href="assets/fonts.css" />
+<!-- URL de l'API pour le formulaire pilote (voir config.js) -->
+<script src="config.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -338,6 +341,22 @@ footer{border-top:1px solid var(--line);background:var(--white);padding:72px 0 3
   .compat .container{flex-direction:column;align-items:flex-start;gap:14px}
   .compat ul{gap:8px 22px}
 }
+/* Formulaire pilote : consentement, champ piège, état fermé, messages */
+form .consent{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.55;color:var(--muted);font-weight:400;margin:4px 0 14px;cursor:pointer}
+form .consent input{flex:none;width:18px;height:18px;margin-top:1px;padding:0;border-radius:5px;appearance:auto;-webkit-appearance:checkbox;accent-color:var(--accent)}
+form .consent a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+form .hp{position:absolute!important;left:-10000px;width:1px;height:1px;overflow:hidden}
+form{position:relative}
+form.is-closed input,form.is-closed select,form.is-closed textarea{background:var(--paper-2);color:var(--faint);cursor:not-allowed}
+form.is-closed .btn{background:var(--line-2);color:var(--muted);box-shadow:none;cursor:not-allowed;transform:none}
+form.is-closed .btn .arr{display:none}
+form.is-closed .consent{cursor:default;opacity:.75}
+.f-closed{display:flex;gap:12px;align-items:flex-start;margin-bottom:20px;padding:14px 16px;border-radius:12px;background:var(--accent-soft);border:1px solid var(--accent-line);color:var(--ink-2);font-size:13.5px;line-height:1.55}
+.f-closed[hidden]{display:none}
+.f-closed svg{flex:none;color:var(--accent);margin-top:1px}
+.f-closed strong{display:block;color:var(--accent-ink);font-weight:600;margin-bottom:2px}
+.ok-msg.err{background:#FBEAEA;color:#A32A2A}
+form .btn:disabled{opacity:.7;cursor:progress}
 </style>
 </head>
 <body>
@@ -509,12 +528,15 @@ footer{border-top:1px solid var(--line);background:var(--white);padding:72px 0 3
       </div>
       <div class="pilot-r">
         <form id="form" novalidate>
-          <div class="two"><div class="f"><label for="f-name" data-i="f_name"></label><input id="f-name" required autocomplete="name"></div><div class="f"><label for="f-co" data-i="f_co"></label><input id="f-co" autocomplete="organization"></div></div>
-          <div class="f"><label for="f-mail" data-i="f_mail"></label><input id="f-mail" type="email" required autocomplete="email"></div>
-          <div class="f"><label for="f-stack" data-i="f_stack"></label><select id="f-stack"><option value="" data-i="f_choose"></option><option>Claude / MCP</option><option>Cursor / MCP</option><option>LangChain / LangGraph</option><option>CrewAI</option><option>n8n / Make</option><option data-i="f_other"></option></select></div>
-          <div class="f"><label for="f-msg" data-i="f_msg"></label><textarea id="f-msg" data-ph="f_msg_ph"></textarea></div>
-          <button class="btn btn-ink" type="submit"><span data-i="f_send"></span><svg class="arr" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-          <div class="ok-msg" id="ok" role="status" data-i="f_ok"></div>
+          <div class="f-closed" id="f-closed" role="note" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5l3 1.8"/></svg><div><strong data-i="f_closed_t"></strong><span data-i="f_closed"></span></div></div>
+          <div class="two"><div class="f"><label for="f-name" data-i="f_name"></label><input id="f-name" name="name" required maxlength="120" autocomplete="name"></div><div class="f"><label for="f-co" data-i="f_co"></label><input id="f-co" name="company" maxlength="160" autocomplete="organization"></div></div>
+          <div class="two"><div class="f"><label for="f-mail" data-i="f_mail"></label><input id="f-mail" name="email" type="email" required maxlength="254" autocomplete="email"></div><div class="f"><label for="f-country" data-i="f_country"></label><select id="f-country" name="country" required autocomplete="country"></select></div></div>
+          <div class="f"><label for="f-stack" data-i="f_stack"></label><select id="f-stack" name="stack"><option value="" data-i="f_choose"></option><option>Claude / MCP</option><option>Cursor / MCP</option><option>LangChain / LangGraph</option><option>CrewAI</option><option>n8n / Make</option><option value="other" data-i="f_other"></option></select></div>
+          <div class="f"><label for="f-msg" data-i="f_msg"></label><textarea id="f-msg" name="use_case" required minlength="10" maxlength="2000" data-ph="f_msg_ph"></textarea></div>
+          <div class="hp" aria-hidden="true"><label for="f-web">Website</label><input id="f-web" name="website" tabindex="-1" autocomplete="off"></div>
+          <label class="consent" for="f-consent"><input id="f-consent" name="consent" type="checkbox" required><span data-i="f_consent"></span></label>
+          <button class="btn btn-ink" type="submit" id="f-submit"><span data-i="f_send" id="f-send"></span><svg class="arr" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="ok-msg" id="ok" role="status" aria-live="polite"></div>
           <p class="form-note" data-i="f_note"></p>
         </form>
       </div>
@@ -532,7 +554,7 @@ footer{border-top:1px solid var(--line);background:var(--white);padding:72px 0 3
       <div class="ft-brand"><img src="assets/agentote-logo.svg" alt="AgentOte" width="241" height="52"><p data-i="ft_tag"></p></div>
       <div><h4 data-i="ft_prod"></h4><a href="#how" data-i="nav_how"></a><a href="#security" data-i="nav_sec"></a><a href="#integration" data-i="nav_int"></a><a href="#demo" data-i="nav_demo"></a></div>
       <div><h4>AgentOte</h4><a href="#who" data-i="ft_who"></a><a href="#pilot" data-i="ft_pilot"></a><a href="#faq">FAQ</a></div>
-      <div><h4 data-i="ft_legal"></h4><a href="#" data-i="ft_mentions"></a><a href="#" data-i="ft_privacy"></a><a href="#" data-i="ft_terms"></a></div>
+      <div><h4 data-i="ft_legal"></h4><a href="mentions-legales.html" data-i="ft_mentions"></a><a href="confidentialite.html" data-i="ft_privacy"></a><a href="cgu.html" data-i="ft_terms"></a></div>
     </div>
     <div class="ft-bot"><span>© 2026 AgentOte · <span data-i="ft_rights"></span></span><span data-i="ft_made"></span></div>
   </div>
@@ -600,8 +622,15 @@ final <span class="tk-p">=</span> bot.<span class="tk-f">wait_for_decision</span
   pi_you:"Vous recevez", pi_you_l:["Accès complet en environnement de test","Aide à l'intégration (MCP ou Python)","Une ligne directe avec l'équipe"],
   pi_us:"En échange", pi_us_l:["Vos retours, francs et réguliers","Un témoignage si le produit vous plaît"],
   f_name:"Nom *", f_co:"Entreprise", f_mail:"E-mail professionnel *", f_stack:"Votre stack", f_choose:"Choisir…", f_other:"Autre",
-  f_msg:"Votre cas d'usage", f_msg_ph:"Ce que vos agents doivent payer, et à quelle fréquence…",
-  f_send:"Demander une place", f_ok:"Merci ! Votre demande est bien notée, on vous répond rapidement.", f_note:"Aucune carte bancaire demandée.",
+  f_msg:"Votre cas d'usage *", f_msg_ph:"Ce que vos agents doivent payer, et à quelle fréquence…",
+  f_send:"Demander une place", f_ok:"Merci ! Votre demande est bien enregistrée. On vous répond rapidement.", f_note:"Aucune carte bancaire demandée.",
+  f_country:"Pays *", f_country_ph:"Choisir…",
+  countries:[["FR","France"],["US","États-Unis"],["BE","Belgique"],["CH","Suisse"],["CA","Canada"],["LU","Luxembourg"],["DE","Allemagne"],["GB","Royaume-Uni"],["ES","Espagne"],["IT","Italie"],["NL","Pays-Bas"],["ZZ","Autre pays"]],
+  f_consent:"J'accepte qu'AgentOte utilise ces informations pour répondre à ma demande de pilote. <a href=\"confidentialite.html\">Politique de confidentialité</a> · consentement retirable à tout moment. *",
+  f_sending:"Envoi…", f_closed_t:"Les inscriptions ouvrent bientôt", f_closed_btn:"Inscriptions bientôt ouvertes",
+  f_closed:"Le formulaire n'est pas encore relié à notre serveur : rien ne peut être envoyé pour l'instant, et aucune donnée n'est collectée sur cette page.",
+  f_err_invalid:"Vérifiez les champs obligatoires (*) et la case de consentement.", f_err_rate:"Trop de demandes depuis votre connexion. Réessayez dans une heure.",
+  f_err_net:"Envoi impossible : le serveur ne répond pas. Rien n'a été enregistré, réessayez plus tard.", f_err_other:"Envoi refusé par le serveur. Rien n'a été enregistré.",
   faq_t:"Questions <em>fréquentes</em>",
   faq:[
    ["Qu'est-ce qu'AgentOte, en une phrase ?","Une couche de paiement pour agents IA : l'agent demande, vous validez selon vos règles, et une carte virtuelle à usage unique est émise pour ce seul paiement."],
@@ -677,8 +706,15 @@ final <span class="tk-p">=</span> bot.<span class="tk-f">wait_for_decision</span
   pi_you:"You get", pi_you_l:["Full access in a test environment","Hands-on integration help (MCP or Python)","A direct line to the team"],
   pi_us:"In return", pi_us_l:["Honest, regular feedback","A testimonial, if you like it"],
   f_name:"Name *", f_co:"Company", f_mail:"Work email *", f_stack:"Your stack", f_choose:"Choose…", f_other:"Other",
-  f_msg:"Your use case", f_msg_ph:"What your agents need to pay for, and how often…",
-  f_send:"Request a spot", f_ok:"Thanks! We've got your request and will get back to you soon.", f_note:"No credit card required.",
+  f_msg:"Your use case *", f_msg_ph:"What your agents need to pay for, and how often…",
+  f_send:"Request a spot", f_ok:"Thanks! Your request is saved. We'll get back to you soon.", f_note:"No credit card required.",
+  f_country:"Country *", f_country_ph:"Choose…",
+  countries:[["US","United States"],["CA","Canada"],["GB","United Kingdom"],["FR","France"],["DE","Germany"],["BE","Belgium"],["CH","Switzerland"],["NL","Netherlands"],["ES","Spain"],["IT","Italy"],["LU","Luxembourg"],["ZZ","Other country"]],
+  f_consent:"I agree that AgentOte may use this information to reply to my pilot request. <a href=\"confidentialite.html\">Privacy policy</a> · you can withdraw consent at any time. *",
+  f_sending:"Sending…", f_closed_t:"Sign-ups open soon", f_closed_btn:"Sign-ups opening soon",
+  f_closed:"This form isn't connected to our server yet: nothing can be sent for now, and no data is collected on this page.",
+  f_err_invalid:"Please check the required fields (*) and the consent box.", f_err_rate:"Too many requests from your connection. Please try again in an hour.",
+  f_err_net:"Couldn't send: the server isn't responding. Nothing was saved, please try again later.", f_err_other:"The server rejected the request. Nothing was saved.",
   faq_t:"Frequently asked <em>questions</em>",
   faq:[
    ["What is AgentOte, in one sentence?","A payments layer for AI agents: the agent asks, you approve under your rules, and a single-use virtual card is issued for that one payment."],
@@ -714,6 +750,7 @@ function setLang(l, persist){
   $$(".lang button").forEach(b => { b.classList.toggle("on", b.dataset.lang === LANG); b.setAttribute("aria-pressed", b.dataset.lang === LANG); });
   if (persist) try { localStorage.setItem("agentote-lang", LANG); } catch(e){}
   setDemoVideo(LANG);
+  if (typeof renderForm === "function" && document.getElementById("f-country")) try { renderForm(); } catch(e){}
 }
 /* Vidéo de démo : version EN (149 $ Amtrak) ou FR (149 € SNCF) selon la langue */
 function setDemoVideo(l){
@@ -746,8 +783,48 @@ burger.addEventListener("click",()=>menu(!mm.classList.contains("open")));
 $$("#mmenu a").forEach(a=>a.addEventListener("click",()=>menu(false)));
 const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target);} }), {threshold:.12, rootMargin:"0px 0px -40px 0px"});
 $$(".rv").forEach(el => io.observe(el));
-/* Formulaire : front uniquement, à brancher sur un backend */
-$("#form").addEventListener("submit", e => { e.preventDefault(); const f=e.target; if(!f.checkValidity()){f.reportValidity();return;} $("#ok").classList.add("show"); f.reset(); });
+/* Formulaire pilote → API AgentOte (POST /v1/pilot-requests). URL : config.js (window.AGENTOTE_SITE.apiBase).
+   Sans API configurée (GitHub Pages pour l'instant) : formulaire fermé, message honnête, rien n'est envoyé. */
+const SITE_CFG = window.AGENTOTE_SITE || {};
+const API_BASE = typeof SITE_CFG.apiBase === "string" && SITE_CFG.apiBase ? SITE_CFG.apiBase.replace(/\/$/, "") : null;
+let formMsg = null; // clé du dernier message affiché (retraduit au changement de langue)
+function showFormMsg(key, tone){
+  formMsg = key ? { key, tone } : null;
+  const el = $("#ok"); el.className = "ok-msg" + (key ? " show " + (tone || "ok") : "");
+  el.innerHTML = key ? (LANG === "fr" ? frTypo(T.fr[key]) : T[LANG][key]) : "";
+}
+function renderForm(){
+  const d = T[LANG], sel = $("#f-country"), v = sel.value;
+  sel.innerHTML = `<option value="">${d.f_country_ph}</option>` + d.countries.map(([c, n]) => `<option value="${c}">${n}</option>`).join("");
+  sel.value = v;
+  const closed = !API_BASE;
+  $("#form").classList.toggle("is-closed", closed);
+  $("#f-closed").hidden = !closed;
+  $$("#form input, #form select, #form textarea, #form button").forEach(el => { if (el.name !== "website") el.disabled = closed; });
+  if (closed) $("#f-send").textContent = d.f_closed_btn;
+  if (formMsg) showFormMsg(formMsg.key, formMsg.tone);
+}
+renderForm();
+$("#form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const f = e.target;
+  if (!API_BASE) return; // jamais de faux succès
+  if (!f.checkValidity()) { f.reportValidity(); showFormMsg("f_err_invalid", "err"); return; }
+  const btn = $("#f-submit"), label = $("#f-send");
+  const body = {
+    name: f.name.value.trim(), email: f.email.value.trim(), company: f.company.value.trim(), country: f.country.value,
+    stack: f.stack.value, use_case: f.use_case.value.trim(), consent: f.consent.checked, website: f.website.value, lang: LANG,
+  };
+  btn.disabled = true; label.textContent = T[LANG].f_sending; showFormMsg(null);
+  try {
+    const r = await fetch(API_BASE + "/v1/pilot-requests", { method: "POST", headers: { "content-type": "application/json", "accept-language": LANG }, body: JSON.stringify(body) });
+    if (r.status === 201 || r.status === 200) { showFormMsg("f_ok", "ok"); f.reset(); }
+    else if (r.status === 429) showFormMsg("f_err_rate", "err");
+    else if (r.status === 400) showFormMsg("f_err_invalid", "err");
+    else showFormMsg("f_err_other", "err");
+  } catch (err) { showFormMsg("f_err_net", "err"); }
+  finally { btn.disabled = false; label.innerHTML = LANG === "fr" ? frTypo(T.fr.f_send) : T[LANG].f_send; }
+});
 /* Console animée : demande → en attente → approuvée → carte émise */
 const panes=$$(".pane"), steps=$$("#steps li"), DUR=[3000,3400,2600,5000];
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
